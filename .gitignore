@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS Generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.git?*
+
+# Virtual Environments
+env/
+venv/
+.venv/
+
+# Tableau Local Temporary & Cache
+*.tfl
+*.tflx
+*.hyper
+*.tds
+*.tdsx
+!*.twb
+!*.twbx
+
+# Large export dumps
+*.tar.gz
+*.zip
+

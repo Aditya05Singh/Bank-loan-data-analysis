@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="utf-8"?>
+<workbook xmlns:user="http://www.tableausoftware.com/xml/user" version="18.1">
+  <document-info>
+    <properties/>
+  </document-info>
+  <preferences/>
+  <datasources>
+    <datasource caption="loan_data_cleaned" inline="true" name="federated.loan_data" version="18.1">
+      <connection class="federated">
+        <named-connections>
+          <named-connection caption="loan_data_cleaned" name="textscan.loan_data">
+            <connection class="textscan" directory="../data/cleaned" filename="loan_data_cleaned.csv" password="" server=""/>
+          </named-connection>
+        </named-connections>
+        <relation connection="textscan.loan_data" name="loan_data_cleaned.csv" table="[loan_data_cleaned#csv]" type="table">
+          <columns character-set="UTF-8" header="yes" locale="en_US" separator=",">
+            <column datatype="integer" name="id" ordinal="0"/>
+            <column datatype="string" name="address_state" ordinal="1"/>
+            <column datatype="string" name="application_type" ordinal="2"/>
+            <column datatype="string" name="emp_length" ordinal="3"/>
+            <column datatype="string" name="emp_title" ordinal="4"/>
+            <column datatype="string" name="grade" ordinal="5"/>
+            <column datatype="string" name="home_ownership" ordinal="6"/>
+            <column datatype="date" name="issue_date" ordinal="7"/>
+            <column datatype="date" name="last_credit_pull_date" ordinal="8"/>
+            <column datatype="date" name="last_payment_date" ordinal="9"/>
+            <column datatype="string" name="loan_status" ordinal="10"/>
+            <column datatype="date" name="next_payment_date" ordinal="11"/>
+            <column datatype="integer" name="member_id" ordinal="12"/>
+            <column datatype="string" name="purpose" ordinal="13"/>
+            <column datatype="string" name="sub_grade" ordinal="14"/>
+            <column datatype="string" name="term" ordinal="15"/>
+            <column datatype="string" name="verification_status" ordinal="16"/>
+            <column datatype="real" name="annual_income" ordinal="17"/>
+            <column datatype="real" name="dti" ordinal="18"/>
+            <column datatype="real" name="installment" ordinal="19"/>
+            <column datatype="real" name="int_rate" ordinal="20"/>
+            <column datatype="real" name="loan_amount" ordinal="21"/>
+            <column datatype="integer" name="total_acc" ordinal="22"/>
+            <column datatype="real" name="total_payment" ordinal="23"/>
+          </columns>
+        </relation>
+      </connection>
+      <aliases enabled="yes"/>
+      <column caption="Default Flag" datatype="integer" name="[Calculation_DefaultFlag]" role="measure" type="quantitative">
+        <calculation class="tableau" formula="IF [loan_status] = 'Charged Off' THEN 1 ELSE 0 END"/>
+      </column>
+      <column caption="Default Rate" datatype="real" name="[Calculation_DefaultRate]" role="measure" type="quantitative">
+        <calculation class="tableau" formula="SUM([Calculation_DefaultFlag]) / COUNT([id])"/>
+      </column>
+      <column caption="Good Loan Flag" datatype="integer" name="[Calculation_GoodLoanFlag]" role="measure" type="quantitative">
+        <calculation class="tableau" formula="IF [loan_status] = 'Fully Paid' OR [loan_status] = 'Current' THEN 1 ELSE 0 END"/>
+      </column>
+      <column caption="Good Loan Rate" datatype="real" name="[Calculation_GoodLoanRate]" role="measure" type="quantitative">
+        <calculation class="tableau" formula="SUM([Calculation_GoodLoanFlag]) / COUNT([id])"/>
+      </column>
+      <column caption="Recovery Rate" datatype="real" name="[Calculation_RecoveryRate]" role="measure" type="quantitative">
+        <calculation class="tableau" formula="SUM(IF [loan_status] = 'Charged Off' THEN [total_payment] ELSE 0 END) / NULLIF(SUM(IF [loan_status] = 'Charged Off' THEN [loan_amount] ELSE 0 END), 0)"/>
+      </column>
+      <column caption="Net Credit Loss" datatype="real" name="[Calculation_NetCreditLoss]" role="measure" type="quantitative">
+        <calculation class="tableau" formula="SUM(IF [loan_status] = 'Charged Off' THEN [loan_amount] - [total_payment] ELSE 0 END)"/>
+      </column>
+      <column caption="High Risk Flag" datatype="string" name="[Calculation_HighRiskFlag]" role="dimension" type="nominal">
+        <calculation class="tableau" formula="IF [dti] &gt;= 0.20 OR [grade] = 'D' OR [grade] = 'E' OR [grade] = 'F' OR [grade] = 'G' THEN 'High Risk' ELSE 'Standard Risk' END"/>
+      </column>
+      <column caption="Loan Amount Range" datatype="string" name="[Calculation_LoanAmountRange]" role="dimension" type="nominal">
+        <calculation class="tableau" formula="IF [loan_amount] &lt; 5000 THEN '1. Under $5,000' ELSEIF [loan_amount] &lt;= 9999.99 THEN '2. $5,000 - $9,999' ELSEIF [loan_amount] &lt;= 14999.99 THEN '3. $10,000 - $14,999' ELSEIF [loan_amount] &lt;= 19999.99 THEN '4. $15,000 - $19,999' ELSEIF [loan_amount] &lt;= 24999.99 THEN '5. $20,000 - $24,999' ELSE '6. $25,000 and Above' END"/>
+      </column>
+      <column caption="Income Range" datatype="string" name="[Calculation_IncomeRange]" role="dimension" type="nominal">
+        <calculation class="tableau" formula="IF [annual_income] &lt; 30000 THEN '1. Under $30,000' ELSEIF [annual_income] &lt;= 59999.99 THEN '2. $30,000 - $59,999' ELSEIF [annual_income] &lt;= 89999.99 THEN '3. $60,000 - $89,999' ELSEIF [annual_income] &lt;= 119999.99 THEN '4. $90,000 - $119,999' ELSE '5. $120,000 and Above' END"/>
+      </column>
+      <column caption="DTI Range" datatype="string" name="[Calculation_DTIRange]" role="dimension" type="nominal">
+        <calculation class="tableau" formula="IF [dti] &lt; 0.10 THEN '1. Under 10.0%' ELSEIF [dti] &lt;= 0.1499 THEN '2. 10.0% - 14.99%' ELSEIF [dti] &lt;= 0.1999 THEN '3. 15.0% - 19.99%' ELSEIF [dti] &lt;= 0.2499 THEN '4. 20.0% - 24.99%' ELSE '5. 25.0% and Above' END"/>
+      </column>
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name="kpi_total_applications">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="kpi_total_funded">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="kpi_total_received">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="kpi_avg_int_rate">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="kpi_avg_loan_amount">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="kpi_default_rate">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_loan_status_distribution">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_monthly_funded_trend">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_quarterly_funded">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_applications_by_year">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_top10_states_funded">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_cust_home_ownership">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_cust_emp_length">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_cust_verification_status">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_avg_loan_by_income">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_total_loan_by_income">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_cust_term_split">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_top5_purposes_by_rate">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_avg_dti_by_income">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_loan_count_by_grade">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_avg_loan_by_grade">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_top10_states_count">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_rate_by_grade">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_by_purpose">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_by_dti">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_by_int_rate">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_charged_off_by_year">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_recovery_rate_by_year">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_by_home">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_by_emp_length">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_default_by_income">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="kpi_high_risk_summary">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+    <worksheet name="viz_risk_segment_distribution">
+      <table>
+        <view>
+          <datasources>
+            <datasource caption="loan_data_cleaned" name="federated.loan_data"/>
+          </datasources>
+        </view>
+        <rows/>
+        <cols/>
+      </table>
+    </worksheet>
+  </worksheets>
+  <dashboards>
+    <dashboard name="Dashboard 1 - Loan Portfolio Overview">
+      <style/>
+      <size maxheight="1000" maxwidth="1600" minheight="1000" minwidth="1600"/>
+      <zones>
+        <zone h="100000" id="1" type="layout-basic" w="100000" x="0" y="0">
+          <zone id="2" name="kpi_total_applications" type="box"/>
+          <zone id="3" name="kpi_total_funded" type="box"/>
+          <zone id="4" name="kpi_total_received" type="box"/>
+          <zone id="5" name="kpi_avg_int_rate" type="box"/>
+          <zone id="6" name="kpi_avg_loan_amount" type="box"/>
+          <zone id="7" name="kpi_default_rate" type="box"/>
+          <zone id="8" name="viz_loan_status_distribution" type="box"/>
+          <zone id="9" name="viz_monthly_funded_trend" type="box"/>
+          <zone id="10" name="viz_quarterly_funded" type="box"/>
+          <zone id="11" name="viz_applications_by_year" type="box"/>
+          <zone id="12" name="viz_top10_states_funded" type="box"/>
+        </zone>
+      </zones>
+    </dashboard>
+    <dashboard name="Dashboard 2 - Customer &amp; Loan Analysis">
+      <style/>
+      <size maxheight="1000" maxwidth="1600" minheight="1000" minwidth="1600"/>
+      <zones>
+        <zone h="100000" id="1" type="layout-basic" w="100000" x="0" y="0">
+          <zone id="2" name="viz_cust_home_ownership" type="box"/>
+          <zone id="3" name="viz_cust_emp_length" type="box"/>
+          <zone id="4" name="viz_cust_verification_status" type="box"/>
+          <zone id="5" name="viz_avg_loan_by_income" type="box"/>
+          <zone id="6" name="viz_total_loan_by_income" type="box"/>
+          <zone id="7" name="viz_cust_term_split" type="box"/>
+          <zone id="8" name="viz_top5_purposes_by_rate" type="box"/>
+          <zone id="9" name="viz_avg_dti_by_income" type="box"/>
+          <zone id="10" name="viz_loan_count_by_grade" type="box"/>
+          <zone id="11" name="viz_avg_loan_by_grade" type="box"/>
+          <zone id="12" name="viz_top10_states_count" type="box"/>
+        </zone>
+      </zones>
+    </dashboard>
+    <dashboard name="Dashboard 3 - Risk Analysis">
+      <style/>
+      <size maxheight="1050" maxwidth="1600" minheight="1050" minwidth="1600"/>
+      <zones>
+        <zone h="100000" id="1" type="layout-basic" w="100000" x="0" y="0">
+          <zone id="2" name="viz_risk_default_rate_by_grade" type="box"/>
+          <zone id="3" name="viz_risk_default_by_purpose" type="box"/>
+          <zone id="4" name="viz_risk_default_by_dti" type="box"/>
+          <zone id="5" name="viz_risk_default_by_int_rate" type="box"/>
+          <zone id="6" name="viz_risk_charged_off_by_year" type="box"/>
+          <zone id="7" name="viz_risk_recovery_rate_by_year" type="box"/>
+          <zone id="8" name="viz_risk_default_by_home" type="box"/>
+          <zone id="9" name="viz_risk_default_by_emp_length" type="box"/>
+          <zone id="10" name="viz_risk_default_by_income" type="box"/>
+          <zone id="11" name="kpi_high_risk_summary" type="box"/>
+          <zone id="12" name="viz_risk_segment_distribution" type="box"/>
+        </zone>
+      </zones>
+    </dashboard>
+  </dashboards>
+  <windows>
+    <window class="dashboard" name="Dashboard 1 - Loan Portfolio Overview">
+      <active/>
+    </window>
+    <window class="dashboard" name="Dashboard 2 - Customer &amp; Loan Analysis">
+      <active/>
+    </window>
+    <window class="dashboard" name="Dashboard 3 - Risk Analysis">
+      <active/>
+    </window>
+  </windows>
+</workbook>

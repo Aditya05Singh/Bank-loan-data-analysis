@@ -1,0 +1,6 @@
+# Minimal dependencies for Bank Loan Lending Data Analytics Pipeline
+pandas>=2.0.0
+numpy>=1.24.0
+SQLAlchemy>=2.0.0
+PyMySQL>=1.0.0
+
